@@ -1,0 +1,230 @@
+#!/usr/bin/env python
+
+#The MIT License (MIT)
+#
+#Copyright (c) 2014 Care.com
+#
+#Permission is hereby granted, free of charge, to any person obtaining a copy
+#of this software and associated documentation files (the "Software"), to deal
+#in the Software without restriction, including without limitation the rights
+#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#copies of the Software, and to permit persons to whom the Software is
+#furnished to do so, subject to the following conditions:
+#
+#The above copyright notice and this permission notice shall be included in all
+#copies or substantial portions of the Software.
+#
+#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#SOFTWARE.
+
+# Based on the following:
+# https://github.com/dropbox/pygerduty
+# http://developer.pagerduty.com/documentation/rest
+
+import os
+import sys
+import argparse
+import ConfigParser
+import pygerduty
+import datetime
+from pytz import timezone
+import dateutil.parser
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
+
+def print_window(window):
+    stime = dateutil.parser.parse(window.start_time)
+    etime = dateutil.parser.parse(window.end_time)
+    desc = window.description
+    if desc == None:
+        desc = ''
+    else:
+        desc = ': ' + desc
+    print "ID: %s %s" % (window.id, desc)
+    print "created by: %s" % (window.created_by.name)
+    print "start time: %s" % (stime.strftime("%c %z"))
+    print "end time  : %s" % (etime.strftime("%c %z"))
+    print "services:"
+    for s in window.services:
+        print "    %s" % (s.name)
+    print ""
+
+def do_services(pager, args, config):
+    print "Service name                             Service ID"
+    print "---------------------------------------------------"
+    for service in pager.services.list():
+        print "%-40s %s" % (service.name, service.id)
+
+def do_list(pager, args, config):
+    # filter can be past, future, or ongoing.  We don't care about 
+    # maintenance windows that occurred in the past, so only display
+    # ongoing and then future maintenance windows
+    # See http://developer.pagerduty.com/documentation/rest/maintenance_windows/list
+    for window in pager.maintenance_windows.list(filter="ongoing"):
+        print_window(window)
+
+    for window in pager.maintenance_windows.list(filter="future"):
+        print_window(window)
+
+def do_users(pager, args, config):
+    print "Username             e-mail                                   userid"
+    print "---------------------------------------------------------------------"
+    for user in pager.users.list():
+        print "%-20s %-40s %s" % (user.name, user.email, user.id)
+
+def do_schedules(pager, args, config):
+    for s in sorted(config.sections()):
+        if s.endswith('_schedule'):
+            print s[:-9]
+
+def do_schedule(pager, args, config):
+    # First we have to find the PD userid based on the users e-mail
+    # address
+    userid = None
+    for user in pager.users.list():
+        if user.email == email:
+            userid = user.id
+            break
+
+    if userid == None:
+        print "e-mail address %s not recognized in PagerDuty account %s" \
+              % (email, account)
+        sys.exit(1)
+
+    duration = None
+    note = None
+    ids = None
+
+    # If args.option is defined then read default values from 
+    # the configuration file
+    if args.option:
+        cfg = args.option + "_schedule"
+        if config.has_option(cfg, 'duration'):
+            duration = config.get(cfg, 'duration')
+        if config.has_option(cfg, 'note'):
+            note = config.get(cfg, 'note')
+        if config.has_option(cfg, 'ids'):
+            ids = config.get(cfg, 'ids')
+ 
+    now = datetime.datetime.now(tz=TZ)
+    if args.duration:
+        duration = args.duration
+
+    try: 
+        end = now + datetime.timedelta(0,0,0,0,int(duration))
+    except Exception, e:
+        print "Missing or invalid duration"
+        sys.exit(1)
+
+    if args.note:
+        note = args.note
+
+    if note == None:
+        note=""
+
+    if args.ids:
+        ids = args.ids
+
+    if not ids:
+        print "Missing ID list"
+        sys.exit(1)
+
+    try:
+        res = pager.maintenance_windows.create(start_time=now.isoformat(),
+                                         end_time=end.isoformat(),
+                                         service_ids=ids.split(","),
+                                         requester_id=userid,
+                                         description=note)
+    except Exception, e:
+        print "Error submitting maintenance window request"
+        print e
+        sys.exit(1)
+
+    print_window(res)
+
+def do_delete(pager, args, config):
+    if not args.option:
+        print "Missing ID to delete"
+        sys.exit(1)
+
+    try:
+        res = pager.maintenance_windows.delete(args.option)
+    except Exception, e:
+        print e
+        sys.exit(1)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="PagerDuty Maintenance utility")
+    parser.add_argument('-c', '--config', 
+                        help="Configuration file. Default: ~/.pdmaint", 
+                        required=False, 
+                        default='~/.pdmaint')
+    parser.add_argument('-d', '--duration', 
+                        help="Duration in minutes of the scheduled downtime",
+                        required=False)
+    parser.add_argument('-n', '--note',
+                        help="Optional note associated with the maintenance window",
+                        required=False)
+    parser.add_argument('-i', '--ids',
+                        help="List of service ID's.  Use 'services' command for a list of valid ID's",
+                        required=False)
+    parser.add_argument('cmd', help="One of: services, users, schedule, list, delete, schedules")
+    parser.add_argument('option', nargs='?', help="When cmd=schedule this can be an optional pre-defined schedule read from the configuration file.  When cmd=delete this must contain the ID of the maintenance window to delete.")
+
+    args = parser.parse_args()
+
+    config = ConfigParser.ConfigParser()
+    configfile = os.path.realpath(os.path.expanduser(args.config))
+
+    if os.path.isfile(configfile):
+        try:
+            config.read([configfile])
+        except Exception, e:
+            print e
+            sys.exit(1)
+    else:
+        print "File %s does not exist" % (configfile)
+        sys.exit(1)
+
+    # The conf file should look something like this:
+    # [pagerduty]
+    # api_key=abcdefghijklmnopqrst
+    # email=someuser@somedomain.com
+    # account=pagerduty_account_key
+    # timezone=US/Eastern
+
+    for p in [ 'api_key', 'email', 'account', 'timezone' ]:
+        if not config.has_option('pagerduty', p):
+            print "'%s' not defined pagerduty section of %s" % (p, args.config)
+            sys.exit(1)
+
+    api_key = config.get('pagerduty', 'api_key')
+    email = config.get('pagerduty', 'email')
+    account = config.get('pagerduty', 'account')
+    TZ = timezone(config.get('pagerduty', 'timezone'))
+
+    pager = pygerduty.PagerDuty(account, api_key)
+
+    if args.cmd == 'services':
+        do_services(pager, args, config)
+    elif args.cmd == 'list':
+        do_list(pager, args, config)
+    elif args.cmd == 'users':
+        do_users(pager, args, config)
+    elif args.cmd == 'schedule':
+        do_schedule(pager, args, config)
+    elif args.cmd == 'schedules':
+        do_schedules(pager, args, config)
+    elif args.cmd == 'delete':
+        do_delete(pager, args, config)
+    else:
+        print "Unknown command: %s" % (args.cmd)
+        sys.exit(1)

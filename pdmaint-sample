@@ -1,0 +1,34 @@
+# Copy this file to ~/.pdmaint and edit as necessary.  All the entries in the
+# # [pagerduty] section are required.  All subsequent sections with a _schedule
+# prefix are optional.
+
+[pagerduty]
+# PagerDuty API key.  To obtain a key visit https://<your_account>.pagerduty.com/api_keys
+api_key=xxxxxxxxxxxxxxxxxxxx
+
+# e-mail address associated with a PagerDuty account
+email=you@yourdomain.com
+
+# The name of your account. From: https://your_account.pagerduty.com/
+account=your_account
+
+# Your local timezone.  The tzinfo utility can be used to see all valid values.
+timezone=US/Eastern
+
+
+# The following ar eexamples of defined schedules.  Use the command 'pdmaint services'
+# to obtain a list of service ID's.
+
+# Schedule 2 hours of downtime when performing a release.  Disable a bunch of 
+# service IDs
+[release_schedule]
+duration=120
+note=Production release
+ids=XYZ1234,A1B2C3D,XXXXXXX,YYYYYYY
+
+# Schedule a 30 minute maintenance window for one service
+[maintenance_schedule]
+duration=30
+note=maintenance window
+ids=DK3X403
+
