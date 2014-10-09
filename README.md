@@ -8,10 +8,10 @@ Requirements
 ============
 
 pdmaint uses the python ``pygerduty`` library to interact with the PagerDuty API.  
-This library can be installed from `source <https://github.com/dropbox/pygerduty>`_ or via ``pip install pygerduty``.
+This library can be installed from https://github.com/dropbox/pygerduty or via ``pip install pygerduty``.
 
 pdmaint also makes use of the ``pytz`` library for timezone data. 
-This library can be installed from `source <http://pytz.sourceforge.net/>`_ or via ``pip install pytz``.
+This library can be installed from http://pytz.sourceforge.net/ or via ``pip install pytz``.
 
 Documentation
 =============
