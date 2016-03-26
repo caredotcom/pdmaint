@@ -4,13 +4,17 @@ pdmaint
 
 A command line utility for scheduling and managing maintenance windows in PagerDuty.
 
+Install
+============
+Run `pip install -r requirements.txt`
+
 Requirements
 ============
 
-pdmaint uses the python ``pygerduty`` library to interact with the PagerDuty API.  
+pdmaint uses the python ``pygerduty`` library to interact with the PagerDuty API.
 This library can be installed from https://github.com/dropbox/pygerduty or via ``pip install pygerduty``.
 
-pdmaint also makes use of the ``pytz`` library for timezone data. 
+pdmaint also makes use of the ``pytz`` library for timezone data.
 This library can be installed from http://pytz.sourceforge.net/ or via ``pip install pytz``.
 
 Documentation
@@ -19,7 +23,7 @@ Documentation
 To get started with pdmaint, copy the file pdmaint-sample to ~/.pdmaint and
 edit the [pagerduty] section.  Include an API key for your PagerDuty account,
 an e-mail address associated with your PagerDuty account, and the name of
-your PagerDuty account.  If you access PagerDuty via the url 
+your PagerDuty account.  If you access PagerDuty via the url
 https://blargh.pagerduty.com then your account name is blargh.
 
 Also make sure to set your time zone properly.  It should match the time zone
@@ -27,7 +31,7 @@ specified in your Pager Duty account.  For a list of time zone strings simply
 run the tzlist command.
 
 Once the [pagerduty] section of your ~/.pdmaint file is set up then invoke
-pdmaint with the "services" command and you should see output that 
+pdmaint with the "services" command and you should see output that
 summarizes your defined services.  It should look something like this:
 
     $ pdmaint services
@@ -67,8 +71,8 @@ IDs separated by commas:
 If you find yourself reguarly scheduling similar maintenance windows then
 you can define templates in your ~/.pdmaint configuration file.  Sections in
 the configuration file whose name ends with _schedule define templates
-that let you quickly and easily schedule common maintenance windows.  For 
-example, the folloing block defines a 2 hour maintenance window for 
+that let you quickly and easily schedule common maintenance windows.  For
+example, the folloing block defines a 2 hour maintenance window for
 performing releases to two services and a 30 minute window for testing another.
 
     [release_schedule]
