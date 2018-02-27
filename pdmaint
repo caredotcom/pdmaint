@@ -30,15 +30,11 @@ import os
 import sys
 import argparse
 import ConfigParser
-import pygerduty
+import pygerduty.v2
 import datetime
 from pytz import timezone
 import dateutil.parser
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import urllib2
 
 def print_window(window):
     stime = dateutil.parser.parse(window.start_time)
@@ -49,12 +45,13 @@ def print_window(window):
     else:
         desc = ': ' + desc
     print "ID: %s %s" % (window.id, desc)
-    print "created by: %s" % (window.created_by.name)
+
+    print "created by: %s" % (window.created_by.summary)
     print "start time: %s" % (stime.strftime("%c %z"))
     print "end time  : %s" % (etime.strftime("%c %z"))
     print "services:"
     for s in window.services:
-        print "    %s" % (s.name)
+        print "    %s" % (s.summary)
     print ""
 
 def do_services(pager, args, config):
@@ -91,12 +88,11 @@ def do_schedule(pager, args, config):
     userid = None
     for user in pager.users.list():
         if user.email == email:
-            userid = user.id
+            userid = email
             break
 
     if userid == None:
-        print "e-mail address %s not recognized in PagerDuty account %s" \
-              % (email, account)
+        print "e-mail address %s not recognized in PagerDuty" % (email)
         sys.exit(1)
 
     duration = None
@@ -157,6 +153,13 @@ def do_delete(pager, args, config):
 
     try:
         res = pager.maintenance_windows.delete(args.option)
+    except urllib2.HTTPError, e:
+        if e.code == 405:
+            print "Error from PagerDuty. Does maintenance window %s exist? Try 'pdmaint list'" % ( args.option )
+        else:
+            print e
+        sys.exit(1)
+        
     except Exception, e:
         print e
         sys.exit(1)
@@ -198,20 +201,18 @@ if __name__ == '__main__':
     # [pagerduty]
     # api_key=abcdefghijklmnopqrst
     # email=someuser@somedomain.com
-    # account=pagerduty_account_key
     # timezone=US/Eastern
 
-    for p in [ 'api_key', 'email', 'account', 'timezone' ]:
+    for p in [ 'api_key', 'email', 'timezone' ]:
         if not config.has_option('pagerduty', p):
             print "'%s' not defined pagerduty section of %s" % (p, args.config)
             sys.exit(1)
 
     api_key = config.get('pagerduty', 'api_key')
     email = config.get('pagerduty', 'email')
-    account = config.get('pagerduty', 'account')
     TZ = timezone(config.get('pagerduty', 'timezone'))
 
-    pager = pygerduty.PagerDuty(account, api_key)
+    pager = pygerduty.v2.PagerDuty(api_key)
 
     if args.cmd == 'services':
         do_services(pager, args, config)

@@ -1,4 +1,4 @@
-=======
+
 pdmaint
 =======
 
@@ -13,6 +13,7 @@ Requirements
 
 pdmaint uses the python ``pygerduty`` library to interact with the PagerDuty API.
 This library can be installed from https://github.com/dropbox/pygerduty or via ``pip install pygerduty``.
+Make sure the version of pygerduty you have installed supports v2 of the PagerDuty API (version 0.36 or later).
 
 pdmaint also makes use of the ``pytz`` library for timezone data.
 This library can be installed from http://pytz.sourceforge.net/ or via ``pip install pytz``.
@@ -21,10 +22,8 @@ Documentation
 =============
 
 To get started with pdmaint, copy the file pdmaint-sample to ~/.pdmaint and
-edit the [pagerduty] section.  Include an API key for your PagerDuty account,
-an e-mail address associated with your PagerDuty account, and the name of
-your PagerDuty account.  If you access PagerDuty via the url
-https://blargh.pagerduty.com then your account name is blargh.
+edit the [pagerduty] section.  Include a v2 API key for your PagerDuty account,
+and an e-mail address associated with your PagerDuty account.
 
 Also make sure to set your time zone properly.  It should match the time zone
 specified in your Pager Duty account.  For a list of time zone strings simply
