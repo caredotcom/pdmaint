@@ -159,7 +159,6 @@ def do_delete(pager, args, config):
         else:
             print e
         sys.exit(1)
-        
     except Exception, e:
         print e
         sys.exit(1)
