@@ -115,3 +115,20 @@ that a release will take an hour longer than usual:
     services:
         Production Alerts
         Staging Alerts
+
+Upgrading From PagerDuty v1 API Keys to v2 API Keys
+============
+
+PagerDuty [has announced](https://v2.developer.pagerduty.com/docs/v1-rest-api-decommissioning-faq) that
+version 1 of their API will be decommissioned on October 19, 2018. At that time legacy version 1 API keys
+will no longer work with PagerDuty.
+
+pdmaint now supports version 2 of PagerDuty API keys, so if you haven't done so already then you will
+need to log into your PagerDuty Account, click on ``Configuration`` -> ``API Access``, and generate a
+new v2 API key to use with pdmaint.
+
+Once you have generated the new v2 API key, simply edit ~/.pdmaint and change the ``api_key`` value
+in that file. You can also delete the ``account`` entry in the ~/.pdmaint file as it is no longer
+needed.
+
+That's all you need to do! Easy enough!
