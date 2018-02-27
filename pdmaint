@@ -61,7 +61,7 @@ def do_services(pager, args, config):
         print "%-40s %s" % (service.name, service.id)
 
 def do_list(pager, args, config):
-    # filter can be past, future, or ongoing.  We don't care about 
+    # filter can be past, future, or ongoing.  We don't care about
     # maintenance windows that occurred in the past, so only display
     # ongoing and then future maintenance windows
     # See http://developer.pagerduty.com/documentation/rest/maintenance_windows/list
@@ -99,7 +99,7 @@ def do_schedule(pager, args, config):
     note = None
     ids = None
 
-    # If args.option is defined then read default values from 
+    # If args.option is defined then read default values from
     # the configuration file
     if args.option:
         cfg = args.option + "_schedule"
@@ -109,12 +109,12 @@ def do_schedule(pager, args, config):
             note = config.get(cfg, 'note')
         if config.has_option(cfg, 'ids'):
             ids = config.get(cfg, 'ids')
- 
+
     now = datetime.datetime.now(tz=TZ)
     if args.duration:
         duration = args.duration
 
-    try: 
+    try:
         end = now + datetime.timedelta(0,0,0,0,int(duration))
     except Exception, e:
         print "Missing or invalid duration"
@@ -165,11 +165,11 @@ def do_delete(pager, args, config):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="PagerDuty Maintenance utility")
-    parser.add_argument('-c', '--config', 
-                        help="Configuration file. Default: ~/.pdmaint", 
-                        required=False, 
+    parser.add_argument('-c', '--config',
+                        help="Configuration file. Default: ~/.pdmaint",
+                        required=False,
                         default='~/.pdmaint')
-    parser.add_argument('-d', '--duration', 
+    parser.add_argument('-d', '--duration',
                         help="Duration in minutes of the scheduled downtime",
                         required=False)
     parser.add_argument('-n', '--note',
