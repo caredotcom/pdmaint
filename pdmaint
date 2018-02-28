@@ -45,7 +45,6 @@ def print_window(window):
     else:
         desc = ': ' + desc
     print "ID: %s %s" % (window.id, desc)
-
     print "created by: %s" % (window.created_by.summary)
     print "start time: %s" % (stime.strftime("%c %z"))
     print "end time  : %s" % (etime.strftime("%c %z"))
