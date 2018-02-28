@@ -9,9 +9,6 @@ api_key=xxxxxxxxxxxxxxxxxxxx
 # e-mail address associated with a PagerDuty account
 email=you@yourdomain.com
 
-# The name of your account. From: https://your_account.pagerduty.com/
-account=your_account
-
 # Your local timezone.  The tzinfo utility can be used to see all valid values.
 timezone=US/Eastern
 

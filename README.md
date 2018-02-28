@@ -1,4 +1,4 @@
-=======
+
 pdmaint
 =======
 
@@ -13,6 +13,7 @@ Requirements
 
 pdmaint uses the python ``pygerduty`` library to interact with the PagerDuty API.
 This library can be installed from https://github.com/dropbox/pygerduty or via ``pip install pygerduty``.
+Make sure the version of pygerduty you have installed supports v2 of the PagerDuty API (version 0.36 or later).
 
 pdmaint also makes use of the ``pytz`` library for timezone data.
 This library can be installed from http://pytz.sourceforge.net/ or via ``pip install pytz``.
@@ -21,10 +22,8 @@ Documentation
 =============
 
 To get started with pdmaint, copy the file pdmaint-sample to ~/.pdmaint and
-edit the [pagerduty] section.  Include an API key for your PagerDuty account,
-an e-mail address associated with your PagerDuty account, and the name of
-your PagerDuty account.  If you access PagerDuty via the url
-https://blargh.pagerduty.com then your account name is blargh.
+edit the [pagerduty] section.  Include a v2 API key for your PagerDuty account,
+and an e-mail address associated with your PagerDuty account.
 
 Also make sure to set your time zone properly.  It should match the time zone
 specified in your Pager Duty account.  For a list of time zone strings simply
@@ -116,3 +115,20 @@ that a release will take an hour longer than usual:
     services:
         Production Alerts
         Staging Alerts
+
+Upgrading From PagerDuty v1 API Keys to v2 API Keys
+============
+
+PagerDuty [has announced](https://v2.developer.pagerduty.com/docs/v1-rest-api-decommissioning-faq) that
+version 1 of their API will be decommissioned on October 19, 2018. At that time legacy version 1 API keys
+will no longer work with PagerDuty.
+
+pdmaint now supports version 2 of PagerDuty API keys, so if you haven't done so already then you will
+need to log into your PagerDuty Account, click on ``Configuration`` -> ``API Access``, and generate a
+new v2 API key to use with pdmaint.
+
+Once you have generated the new v2 API key, simply edit ~/.pdmaint and change the ``api_key`` value
+in that file. You can also delete the ``account`` entry in the ~/.pdmaint file as it is no longer
+needed.
+
+That's all you need to do! Easy enough!
