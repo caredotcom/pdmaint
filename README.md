@@ -67,6 +67,37 @@ IDs separated by commas:
         Production Alerts
         Staging Alerts
 
+To schedule a service for maintenance in the future, use --start, and --duration or --end.
+
+    $ pdmaint schedule -s 22:00 -d 60 -n "maintenance today at 22:00" -i TV4ATV1,TQDX1FV,TT42DPX
+    ID: PSYHC3B : maintenance today at 22:00
+    created by: Marcus Berglof
+    start time: Sat Oct 13 22:00:00 2018 +0100
+    end time  : Sat Oct 13 23:00:00 2018 +0100
+    services:
+        Production Alerts
+        Staging Alerts
+
+    $ pdmaint schedule -s 22:00 -e 23:00 -n "maintenance today at 22:00" -i TV4ATV1,TQDX1FV,TT42DPX
+    ID: PYUTRRN : maintenance today at 22:00
+    created by: Marcus Berglof
+    start time: Sat Oct 13 22:00:00 2018 +0100
+    end time  : Sat Oct 13 23:00:00 2018 +0100
+    services:
+        Production Alerts
+        Staging Alerts
+
+Specifying --end will always override --duration as it is more specific.
+
+    $ pdmaint schedule -s 22:00 -e 23:00 -d 30 -n "maintenance today at 22:00" -i TV4ATV1,TQDX1FV,TT42DPX
+    ID: PYUTRRN : maintenance today at 22:00
+    created by: Marcus Berglof
+    start time: Sat Oct 13 22:00:00 2018 +0100
+    end time  : Sat Oct 13 23:00:00 2018 +0100
+    services:
+        Production Alerts
+        Staging Alerts
+
 If you find yourself reguarly scheduling similar maintenance windows then
 you can define templates in your ~/.pdmaint configuration file.  Sections in
 the configuration file whose name ends with _schedule define templates
