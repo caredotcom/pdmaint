@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/Users/mberglof/.virtualenvs/pdmaint/bin/python
 
 #The MIT License (MIT)
 #
@@ -94,6 +94,8 @@ def do_schedule(pager, args, config):
         print "e-mail address %s not recognized in PagerDuty" % (email)
         sys.exit(1)
 
+    start = None
+    end = None
     duration = None
     note = None
     ids = None
@@ -109,15 +111,32 @@ def do_schedule(pager, args, config):
         if config.has_option(cfg, 'ids'):
             ids = config.get(cfg, 'ids')
 
-    now = datetime.datetime.now(tz=TZ)
-    if args.duration:
-        duration = args.duration
+    if args.start:
+        start = args.start
+        try:
+            start_time = dateutil.parser.parse(start)
+        except ValueError, e:
+            print "Missing or invalid start time"
+            sys.exit(1)
+    else:
+        start_time = datetime.datetime.now(tz=TZ)
 
-    try:
-        end = now + datetime.timedelta(0,0,0,0,int(duration))
-    except Exception, e:
-        print "Missing or invalid duration"
-        sys.exit(1)
+    if args.end:
+        end = args.end
+        try:
+            end_time = dateutil.parser.parse(end)
+        except ValueError, e:
+            print "Missing or invalid end time"
+            sys.exit(1)
+    elif args.duration:
+        if not args.end:
+            duration = args.duration
+
+            try:
+                end_time = start_time + datetime.timedelta(0,0,0,0,int(duration))
+            except Exception, e:
+                print "Missing or invalid duration"
+                sys.exit(1)
 
     if args.note:
         note = args.note
@@ -133,8 +152,8 @@ def do_schedule(pager, args, config):
         sys.exit(1)
 
     try:
-        res = pager.maintenance_windows.create(start_time=now.isoformat(),
-                                         end_time=end.isoformat(),
+        res = pager.maintenance_windows.create(start_time=start_time.isoformat(),
+                                         end_time=end_time.isoformat(),
                                          service_ids=ids.split(","),
                                          requester_id=userid,
                                          description=note)
@@ -168,6 +187,12 @@ if __name__ == '__main__':
                         help="Configuration file. Default: ~/.pdmaint",
                         required=False,
                         default='~/.pdmaint')
+    parser.add_argument('-s', '--start',
+                        help="Start date and time of the scheduled downtime",
+                        required=False)
+    parser.add_argument('-e', '--end',
+                        help="End date and time of the scheduled downtime",
+                        required=False)
     parser.add_argument('-d', '--duration',
                         help="Duration in minutes of the scheduled downtime",
                         required=False)
