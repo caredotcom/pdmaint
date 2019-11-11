@@ -99,6 +99,7 @@ def do_schedule(pager, args, config):
     duration = None
     note = None
     ids = None
+    end_time = None
 
     # If args.option is defined then read default values from
     # the configuration file
@@ -121,6 +122,9 @@ def do_schedule(pager, args, config):
     else:
         start_time = datetime.datetime.now(tz=TZ)
 
+    if args.duration:
+        duration = args.duration
+
     if args.end:
         end = args.end
         try:
@@ -128,15 +132,17 @@ def do_schedule(pager, args, config):
         except ValueError, e:
             print "Missing or invalid end time"
             sys.exit(1)
-    elif args.duration:
+    elif duration:
         if not args.end:
-            duration = args.duration
-
             try:
                 end_time = start_time + datetime.timedelta(0,0,0,0,int(duration))
             except Exception, e:
                 print "Missing or invalid duration"
                 sys.exit(1)
+    else:
+        print "Must specify either an end time or a duration"
+        sys.exit(1)
+
 
     if args.note:
         note = args.note
